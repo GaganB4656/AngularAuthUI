@@ -1,8 +1,16 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
-import { Form, FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormControl } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import {
+  Form,
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+  FormControl,
+} from '@angular/forms';
+import { Router, RouterLink } from '@angular/router';
 import ValidateForm from '../../helpers/validateform';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-signup',
@@ -14,9 +22,9 @@ export class SignupComponent implements OnInit {
   type: string = 'password';
   isText: boolean = false;
   eyeIcon: string = 'fa-eye-slash';
-  singupForm! : FormGroup;
+  singupForm!: FormGroup;
 
-  constructor(private fb: FormBuilder) {}
+  constructor(private fb: FormBuilder, private _authService: AuthService, private router: Router) {}
 
   ngOnInit(): void {
     this.singupForm = this.fb.group({
@@ -36,13 +44,21 @@ export class SignupComponent implements OnInit {
 
   onSignup() {
     if (this.singupForm.valid) {
-      // send data to backend
-      console.log(this.singupForm.value);
+      this._authService.signUp(this.singupForm.value).subscribe({
+        next: (res) => {
+          alert('Signup successful! 🎉');
+          this.singupForm.reset();
+          this.router.navigate(['/login']);
+        },
+        error: (err) => {
+          alert('Signup failed! ❌');
+          console.error(err);
+        },
+      });
     } else {
       // display toaster error message
       ValidateForm.validateAllFormFields(this.singupForm);
-      alert("Please fill all fields correctly ⚠️");
+      alert('Please fill all fields correctly ⚠️');
     }
   }
-
 }
